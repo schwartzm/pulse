@@ -49,7 +49,7 @@ Unknowns:
 * How are sentiment API charges incurred (call count, message size, etc.)?
 
 ## Pulse Read API
-The readonly pulse read API (e.g., GET /pulse/{channel}) will return the pulse for all channels, or a specific channel. Optional parameters to the root API can be used to limit the data returned.
+The readonly pulse read API (e.g., GET /pulse/{channel}) will return the pulse for all channels, or a specific channel. Optional parameters to the root API will be introduced to affect the data returned.
 
 `GET /pulse/` Returns the most recent sentiment data for all available channels.
 
@@ -58,11 +58,11 @@ Example payload:
 {
   "channels" : {
     "channel_x": {
-      "measure": 7 // TBD, the datatype/units of sentiment measurement
+      "measure": 7, // TBD, the datatype/units of sentiment measurement
       "updated": "2018-01-02T23:11:42"
     },
     "channel_y": {
-      "measure": 7 // TBD, the datatype/units of sentiment measurement
+      "measure": 7,
       "updated": "2018-01-02T23:11:44"
     }
 }
@@ -75,7 +75,7 @@ Example payload:
 {
   "channels" : {
     "channel_x": {
-      "measure": 7 // TBD, the datatype/units of sentiment measurement
+      "measure": 7,
       "updated": "2018-01-02T23:11:42"
     }
 }
@@ -83,7 +83,10 @@ Example payload:
 TODO:
 As far as REST best practices go, should a single-item list not be returned for a single resource. Rather, just channel_x not in a list of channels.
 
-`GET /pulse/?c='channel_x,channel_w,channel_a'` Returns the most recent sentiment data for channels x, w, and a. Order not guaranteed.
+`GET /pulse/?c=channel_x,channel_w,channel_a` Returns the most recent sentiment data for channels x, w, and a. Order not guaranteed.
+
+TODO:
+Determine best practice REST API for specifying a subset of resources to return. Not sure if a paramter list is correct (like above), or something like /pulse/channel_x/channel_w/channel_a or /pulse/channel_x,channel_w,channel_a or `GET /pulse/?c=[channel_x,channel_w,channel_a]`.
 
 
 
