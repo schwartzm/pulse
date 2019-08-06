@@ -44,7 +44,7 @@ For each configured channel:
 
 Many details are not yet finalized. For example, in #2, exactly which information is extracted? If every source is just slightly different, even with same payload format, how to make the extraction *easily* extensible and apples-to-apples?
 
-Unknowns:
+TODO:
 * Does the sentiment API work best with short snippets or longer text?
 * How are sentiment API charges incurred (call count, message size, etc.)?
 
@@ -59,12 +59,23 @@ Example payload:
   "channels" : {
     "channel_x": {
       "measure": 7, // TBD, the datatype/units of sentiment measurement
-      "updated": "2018-01-02T23:11:42"
+      "updated": "2018-01-02T23:11:42",
+      "links": { // HATEOS compliance
+        "rel": "self",
+        "href": "/pulse/channel_x",
+        "type": "GET"        
+      }
     },
     "channel_y": {
       "measure": 7,
-      "updated": "2018-01-02T23:11:44"
+      "updated": "2018-01-02T23:11:44",
+      "links": {
+        "rel": "self",
+        "href": "/pulse/channel_y",
+        "type": "GET"        
+      }
     }
+  },
 }
 ```
 
@@ -74,16 +85,22 @@ Example payload:
 ```
 {
   "channels" : {
-    "channel_x": {
+    "channel_y": {
       "measure": 7,
       "updated": "2018-01-02T23:11:42"
+      "links": {
+        "rel": "self",
+        "href": "/pulse/channel_y",
+        "type": "GET"
+      }
     }
+  },
 }
 ```
 TODO:
 As far as REST best practices go, should a single-item list not be returned for a single resource. Rather, just channel_x not in a list of channels.
 
-`GET /pulse/?c=channel_x,channel_w,channel_a` Returns the most recent sentiment data for channels x, w, and a. Order not guaranteed.
+`GET /pulse/?channel=channel_x|channel_w|channel_a` Returns the most recent sentiment data for channels x, w, and a. Order not guaranteed.
 
 TODO:
 Determine best practice REST API for specifying a subset of resources to return. Not sure if a paramter list is correct (like above), or something like /pulse/channel_x/channel_w/channel_a or /pulse/channel_x,channel_w,channel_a or `GET /pulse/?c=[channel_x,channel_w,channel_a]`.
