@@ -9,20 +9,84 @@ The sentiment results will be exposed by a readonly REST API (like, GET /pulse/{
 
 ## Channel Configuration
 Since there can be many channels over which sentiment will be measured, the details of each channel must be configured.
+
+General idea for retaining channel configuration...
+
 ```
 {
-  "channels" : [
-    {
-    
+  "channels" : {
+    "channel_x": {
+      "source_a": {
+        "url": "https://example.com/rss",
+        "format": "rss"
+        "extract_fields": ["title", "summary"]
+      },
+      "source_b": {
+        "url": "https://example.net/posts/",
+        "format": "csv",
+        "extract_fields": ["c_1", "c_3"] // Example idea. c_1 == column 1.
+      }
     },
-    {
-    
-    }    
-  
-  ]
-
+    "channel_y": {
+      // sources    
+    }
 }
 ```
+
+## Sentiment Collection Process Overview
+On a schedule (e.g., once per day), the fetch, measure, average, and save process will execute in the background. The results of the process will be available to the exposed readonly REST interface for serving up to clients.
+
+For each configured channel:
+1. Fetch the source(s)
+2. For each source, extract the information to submit to the sentiment API
+3. Average the sentiment results (measurements). Overall, this is the pulse of the specific channel.
+4. Save the pulse to a persistent storage for the given channel; timestamped so that a time series can accrue.
+
+Many details are not yet finalized. For example, in #2, exactly which information is extracted? If every source is just slightly different, even with same payload format, how to make the extraction *easily* extensible and apples-to-apples?
+
+Unknowns:
+* Does the sentiment API work best with short snippets or longer text?
+* How are sentiment API charges incurred (call count, message size, etc.)?
+
+## Pulse Read API
+The readonly pulse read API (e.g., GET /pulse/{channel}) will return the pulse for all channels, or a specific channel. Optional parameters to the root API can be used to limit the data returned.
+
+`GET /pulse/` Returns the most recent sentiment data for all available channels.
+
+Example payload:
+```
+{
+  "channels" : {
+    "channel_x": {
+      "measure": 7 // TBD, the datatype/units of sentiment measurement
+      "updated": "2018-01-02T23:11:42"
+    },
+    "channel_y": {
+      "measure": 7 // TBD, the datatype/units of sentiment measurement
+      "updated": "2018-01-02T23:11:44"
+    }
+}
+```
+
+`GET /pulse/channel_y` Returns the most recent sentiment data for channel "channel_y".
+
+Example payload:
+```
+{
+  "channels" : {
+    "channel_x": {
+      "measure": 7 // TBD, the datatype/units of sentiment measurement
+      "updated": "2018-01-02T23:11:42"
+    }
+}
+```
+TODO:
+As far as REST best practices go, should a single-item list not be returned for a single resource. Rather, just channel_x not in a list of channels.
+
+`GET /pulse/?c='channel_x,channel_w,channel_a'` Returns the most recent sentiment data for channels x, w, and a. Order not guaranteed.
+
+
+
 
 
 
