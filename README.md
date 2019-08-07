@@ -13,7 +13,7 @@ Since the Google Sentiment API is not infinitely free to call, various limits wi
 Yes, efforts and apps like this have already been created. However, it's the process of designing and building it that's fun. The results might be interesting to interpret or present in different ways, but it's more about the dev journey.
 
 ## Functional
-The sentiment results will be exposed by a readonly REST API (like, GET /pulse/{domain}). Currently, no plans for an exposed CRUD interface. To control cost and stay within free tiers on hosting and sentiment API calls, the API will be consumed only by a web page served by this app.
+The sentiment results will be exposed by a readonly REST API (like, GET /pulse/{domain}). Currently, no plans for an exposed CRUD interface.
 
 ## Channel Configuration
 Since there can be many domains over which sentiment will be measured, the details of each domain must be configured.
@@ -68,7 +68,7 @@ Example payload:
     "kind": "pulse",
     "items": [{
         "kind": "pulse",
-        "domainId": "v",
+        "domainId": "auto.truck.review",
         "summary:" "This is the pulse of the domain...",        
         "measure": 7,
         "updated": "2018-01-02T23:11:44",
@@ -93,7 +93,7 @@ Example payload:
   }
 ```
 
-`GET /api/1/pulse/website.reddit.r.news` Returns the most recent sentiment data for domain "domain_y".
+`GET /api/1/pulse/website.reddit.r.news` Returns the most recent sentiment data for domain website.reddit.r.news.
 
 Example payload:
 ```
@@ -110,8 +110,7 @@ Example payload:
   }
 }
 ```
-`GET /pulse/?domain=domain_x|domain_w|domain_a` Returns the most recent sentiment data for domains x, w, and a. Order not guaranteed.
-
+`GET /pulse/?domain=website.reddit.r.news|auto.truck.review|website.major.news` Returns the most recent sentiment data for domains x, w, and a. Order not guaranteed. Response payload same as `GET /api/1/pulse/`, but limted to the specified domains in the "domain=" query parameter.
 
 `GET /domain/` Returns a list of the available domains for which sentiment is calculated. The sentiment values are not returned.
 ```
