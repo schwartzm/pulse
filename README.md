@@ -1,21 +1,29 @@
 # pulse
-The pulse of things. An experiment in using the Google sentiment API. Find freely available resources on the web that are mostly subjective in nature, feed them to the sentiment API, and get an average. Generally, limit each sentiment ("score") to a "channel" of life, so the score is based on related information. Think of it as sentiment on scoped aggregations of subjective data. The subjective part is an important aspect. The data to be checked for sentiment will not include things such as API documentation, technical whitepapers, how-to guides, IETF standards proposals, etc. Rather, the data should be things like news headlines, user posts, op-ed, etc.
+The pulse of things. An experiment in using the Google sentiment API. In summary, sources of freely available text resources on the web will be fed to the Google sentiment API to get a measure of sentiment. For text within the same subject area, an average will be calculated. Since "average sentiment" sounds boring, the average sentiment value for a given subject area, or domain of thought, will be called the "pulse".
+
+Sentiment will be meaused for texts within certain domains of thought. Oxford provides one definition of "domain" as "A specified sphere of activity or knowledge." ([source](https://www.lexico.com/en/definition/domain "Oxford definition")). Example domains are sports, automobiles, consumer products, news. Or, domains can be more specific, such as U.S. football, Ford Pinto, taco shops, financial investment. In this context, don't confuse the word domain with internet things like the Domain Name System or domain name.
+
+By scoping the sentiment measure to specific domains of thought, more accurate conclusions might be drawn. In other words, the sentiment is about related things, apples-to-apples, and not apples-to-oranges.
+
+The targetted text will focus on subjective writings, rather than objective. For example, text like technical designs or API documentation will be avoided. Instead, text like news headlines, user posts, user reviews, op-eds, etc., will be included.
+
+Since the Google Sentiment API is not infinitely free to call, various limits will be placed on the coverage of this application.
 
 ## Reinventing the Wheel?
-Yes, this has been done. But, it's the process of designing and building it that's fun. The result might be interesting to look at, but it's more about the dev journey.
+Yes, efforts and apps like this have already been created. However, it's the process of designing and building it that's fun. The results might be interesting to interpret or present in different ways, but it's more about the dev journey.
 
 ## Functional
-The sentiment results will be exposed by a readonly REST API (like, GET /pulse/{channel}). Currently, no plans for an exposed CRUD interface. To control cost and stay within free tiers on hosting and sentiment API calls, the API will be consumed only by a web page served by this app.
+The sentiment results will be exposed by a readonly REST API (like, GET /pulse/{domain}). Currently, no plans for an exposed CRUD interface. To control cost and stay within free tiers on hosting and sentiment API calls, the API will be consumed only by a web page served by this app.
 
 ## Channel Configuration
-Since there can be many channels over which sentiment will be measured, the details of each channel must be configured.
+Since there can be many domains over which sentiment will be measured, the details of each domain must be configured.
 
-General idea for retaining channel configuration...
+General idea for retaining domain configuration...
 
 ```
 {
-  "channels" : {
-    "channel_x": {
+  "domains" : {
+    "domain_x": {
       "source_a": {
         "url": "https://example.com/rss",
         "format": "rss"
@@ -27,7 +35,7 @@ General idea for retaining channel configuration...
         "extract_fields": ["c_1", "c_3"] // Example idea. c_1 == column 1.
       }
     },
-    "channel_y": {
+    "domain_y": {
       // sources    
     }
 }
@@ -36,11 +44,11 @@ General idea for retaining channel configuration...
 ## Sentiment Collection Process Overview
 On a schedule (e.g., once per day), the fetch, measure, average, and save process will execute in the background. The results of the process will be available to the exposed readonly REST interface for serving up to clients.
 
-For each configured channel:
+For each configured domain:
 1. Fetch the source(s)
 2. For each source, extract the information to submit to the sentiment API
-3. Average the sentiment results (measurements). Overall, this is the pulse of the specific channel.
-4. Save the pulse to a persistent storage for the given channel; timestamped so that a time series can accrue.
+3. Average the sentiment results (measurements). Overall, this is the pulse of the specific domain.
+4. Save the pulse to a persistent storage for the given domain; timestamped so that a time series can accrue.
 
 Many details are not yet finalized. For example, in #2, exactly which information is extracted? If every source is just slightly different, even with same payload format, how to make the extraction *easily* extensible and apples-to-apples?
 
@@ -49,61 +57,82 @@ TODO:
 * How are sentiment API charges incurred (call count, message size, etc.)?
 
 ## Pulse Read API
-The readonly pulse read API (e.g., GET /pulse/{channel}) will return the pulse for all channels, or a specific channel. Optional parameters to the root API will be introduced to affect the data returned.
+The pulse read API (e.g., GET /pulse/{domainId}) will return the pulse for one or more configured domains. Optional parameters to the root API will be introduced to affect the data returned.
 
-`GET /pulse/` Returns the most recent sentiment data for all available channels.
+`GET /api/1/pulse/` Returns the most recent sentiment data for all available domains.
 
 Example payload:
 ```
 {
-  "channels" : {
-    "channel_x": {
-      "measure": 7, // TBD, the datatype/units of sentiment measurement
-      "updated": "2018-01-02T23:11:42",
-      "links": { // HATEOS compliance
-        "rel": "self",
-        "href": "/pulse/channel_x",
-        "type": "GET"        
-      }
+  "data": {
+    "kind": "pulse",
+    "items": [{
+        "kind": "pulse",
+        "domainId": "v",
+        "summary:" "This is the pulse of the domain...",        
+        "measure": 7,
+        "updated": "2018-01-02T23:11:44",
+        "link": {
+          "rel": "self",
+          "href": "/api/1/pulse/auto.truck.review",
+          "type": "GET"
+        }
+      },
+      {
+        "kind": "pulse",
+        "domainId": "website.reddit.r.news",
+        "summary:" "This is the pulse of the domain...",
+        "measure": 7,
+        "updated": "2018-01-02T25:11:54",
+        "link": {
+          "rel": "self",
+          "href": "/api/1/pulse/website.reddit.r.news",
+          "type": "GET"
+        }
+      }]
+  }
+```
+
+`GET /api/1/pulse/website.reddit.r.news` Returns the most recent sentiment data for domain "domain_y".
+
+Example payload:
+```
+{
+  "kind": "pulse",
+  "domainId": "website.reddit.r.news",
+  "summary:" "This is the pulse of the domain...",
+  "measure": 7,
+  "updated": "2018-01-02T25:11:54",
+  "link": {
+    "rel": "self",
+    "href": "/api/1/pulse/website.reddit.r.news",
+    "type": "GET"
+  }
+}
+```
+`GET /pulse/?domain=domain_x|domain_w|domain_a` Returns the most recent sentiment data for domains x, w, and a. Order not guaranteed.
+
+
+`GET /domain/` Returns a list of the available domains for which sentiment is calculated. The sentiment values are not returned.
+```
+{
+  "data": {
+    "kind": "domainMetaInfo",
+    "items": [{
+      "kind": "domainInfo",
+      "domainId": "website.reddit.r.news",
+      "summary": "This is the pulse of the domain...",
+      "created": "2017-04-0326:13:00"
     },
-    "channel_y": {
-      "measure": 7,
-      "updated": "2018-01-02T23:11:44",
-      "links": {
-        "rel": "self",
-        "href": "/pulse/channel_y",
-        "type": "GET"        
-      }
-    }
-  },
+    {
+      "kind": "domainMetaInfo",
+      "domainId": "auto.truck.review",
+      "summary": "This is the pulse of the domain...",
+      "created": "2017-10-0326:13:00"
+    }]
+  }
 }
 ```
-
-`GET /pulse/channel_y` Returns the most recent sentiment data for channel "channel_y".
-
-Example payload:
-```
-{
-  "channels" : {
-    "channel_y": {
-      "measure": 7,
-      "updated": "2018-01-02T23:11:42"
-      "links": {
-        "rel": "self",
-        "href": "/pulse/channel_y",
-        "type": "GET"
-      }
-    }
-  },
-}
-```
-TODO:
-As far as REST best practices go, should a single-item list not be returned for a single resource. Rather, just channel_x not in a list of channels.
-
-`GET /pulse/?channel=channel_x|channel_w|channel_a` Returns the most recent sentiment data for channels x, w, and a. Order not guaranteed.
-
-TODO:
-Determine best practice REST API for specifying a subset of resources to return. Not sure if a paramter list is correct (like above), or something like /pulse/channel_x/channel_w/channel_a or /pulse/channel_x,channel_w,channel_a or `GET /pulse/?c=[channel_x,channel_w,channel_a]`.
 
 
 
