@@ -61,7 +61,8 @@ The pulse read API (e.g., GET /pulse/{domainId}) will return the pulse for one o
 
 `GET /api/1/pulse/` Returns the most recent sentiment data for all available domains.
 
-Example payload:
+Example response:
+
 ```
 {
   "data": {
@@ -95,7 +96,8 @@ Example payload:
 
 `GET /api/1/pulse/website.reddit.r.news` Returns the most recent sentiment data for domain website.reddit.r.news.
 
-Example payload:
+Example response:
+
 ```
 {
   "kind": "pulse",
@@ -112,13 +114,17 @@ Example payload:
 ```
 `GET /pulse/?domain=website.reddit.r.news|auto.truck.review|website.major.news` Returns the most recent sentiment data for domains x, w, and a. Order not guaranteed. Response payload same as `GET /api/1/pulse/`, but limted to the specified domains in the "domain=" query parameter.
 
-`GET /domain/` Returns a list of the available domains for which sentiment is calculated. The sentiment values are not returned.
+## Domain Read API
+`GET /domain/` Returns a list of the available domains over which sentiment is calculated. Notice that the sentiment values are not returned for each domain. This would be for making a list of available domains.
+
+Example response:
+
 ```
 {
   "data": {
     "kind": "domainMetaInfo",
     "items": [{
-      "kind": "domainInfo",
+      "kind": "domainMetaInfo",
       "domainId": "website.reddit.r.news",
       "summary": "This is the pulse of the domain...",
       "created": "2017-04-0326:13:00"
